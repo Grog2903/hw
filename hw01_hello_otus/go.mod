@@ -1,4 +1,4 @@
-module github.com/Grog2903/hw01_hello_otus
+module github.com/Grog2903/hw/hw01_hello_otus
 
 go 1.22
 
