@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
+	"unicode/utf8"
 )
 
 var ErrInvalidString = errors.New("invalid string")
@@ -15,7 +16,7 @@ func Unpack(input string) (string, error) {
 	var isSlashes bool
 
 	for i, currentRune := range input {
-		err := checkError(input, i, repeatableValue)
+		err := checkError(input, i, repeatableValue, isSlashes)
 		if err != nil {
 			return "", err
 		}
@@ -33,7 +34,7 @@ func Unpack(input string) (string, error) {
 			if repeatableCountInt == 0 {
 				str := result.String()
 				result.Reset()
-				result.WriteString(str[:len(str)-1])
+				result.WriteString(str[:len(str)-utf8.RuneLen(rune(str[len(str)-1]))])
 				repeatableValue = ""
 			} else {
 				result.WriteString(strings.Repeat(repeatableValue, repeatableCountInt-1))
@@ -54,22 +55,28 @@ func Unpack(input string) (string, error) {
 	return result.String(), nil
 }
 
-func checkError(input string, incr int, repeatableValue string) error {
+func checkError(input string, incr int, repeatableValue string, isSlashes bool) error {
 	currentRune := rune(input[incr])
 	isCurrentDigit := unicode.IsDigit(currentRune)
 	isNotLastChar := incr != len(input)-1
 	isNextDigit := isNotLastChar && unicode.IsDigit(rune(input[incr+1]))
-	isPreviousCharValid := incr-1 > 0 && input[incr-1] != '\\'
+	isPreviousCharValid := incr-1 > 0 && string(rune(input[incr-1])) != "\\"
+	isLast := incr == len(input)-1
+	lastIsSlash := string(rune(input[len(input)-1])) == "\\"
 
 	if incr == 0 && isCurrentDigit {
 		return ErrInvalidString
 	}
 
-	if isCurrentDigit && isNextDigit && isPreviousCharValid {
+	if isCurrentDigit && isNextDigit && (isPreviousCharValid || isSlashes) {
 		return ErrInvalidString
 	}
 
-	if repeatableValue == "\\" && !(isCurrentDigit || input[incr] == '\\') {
+	if repeatableValue == "\\" && !(isCurrentDigit || string(currentRune) == "\\") {
+		return ErrInvalidString
+	}
+
+	if isLast && lastIsSlash && (isSlashes || string(rune(input[len(input)-2])) != "\\") {
 		return ErrInvalidString
 	}
 
