@@ -9,9 +9,9 @@ import (
 var reg = regexp.MustCompile(`([.,;:!?'])`)
 
 func Top10(text string) []string {
-	var split = strings.Fields(text)
-	var counterMap = make(map[string]int)
-	var result []string
+	split := strings.Fields(text)
+	counterMap := make(map[string]int)
+	result := make([]string, 0, 10)
 
 	for _, word := range split {
 		if word == "-" {
@@ -24,7 +24,7 @@ func Top10(text string) []string {
 			continue
 		}
 
-		counterMap[lowerKeyAndReg] = counterMap[lowerKeyAndReg] + 1
+		counterMap[lowerKeyAndReg]++
 	}
 
 	type keyValueStruct struct {
@@ -32,7 +32,7 @@ func Top10(text string) []string {
 		Value int
 	}
 
-	var sortedStruct []keyValueStruct
+	sortedStruct := make([]keyValueStruct, 0, len(counterMap))
 
 	for key, value := range counterMap {
 		sortedStruct = append(sortedStruct, keyValueStruct{key, value})
