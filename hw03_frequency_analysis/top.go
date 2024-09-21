@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-var reg = regexp.MustCompile(`([.,;:!?'])`)
+var reg = regexp.MustCompile(`^[.,;:!?']+|[.,;:!?']+$`)
 
 func Top10(text string) []string {
 	split := strings.Fields(text)

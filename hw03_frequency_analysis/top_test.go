@@ -1,6 +1,7 @@
 package hw03frequencyanalysis
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -46,6 +47,43 @@ var text = `Как видите, он  спускается  по  лестни�
 func TestTop10(t *testing.T) {
 	t.Run("no words in empty string", func(t *testing.T) {
 		require.Len(t, Top10(""), 0)
+	})
+
+	t.Run("case insensitive", func(t *testing.T) {
+		text := "Слово слово СЛОВО"
+		expected := []string{"слово"}
+		require.Equal(t, expected, Top10(text))
+	})
+
+	t.Run("dash case", func(t *testing.T) {
+		text := "- ---- ----- -------"
+		expected := []string{"----", "-----", "-------"}
+		require.Equal(t, expected, Top10(text))
+	})
+
+	t.Run("leg case", func(t *testing.T) {
+		text := "нога! нога, нога 'нога'"
+		expected := []string{"нога"}
+		require.Equal(t, expected, Top10(text))
+	})
+
+	t.Run("dog&cat case", func(t *testing.T) {
+		text := "dog,cat dog...cat, dogcat"
+		fmt.Println(Top10(text))
+		expected := []string{"dog,cat", "dog...cat", "dogcat"}
+		require.Equal(t, expected, Top10(text))
+	})
+
+	t.Run("some case", func(t *testing.T) {
+		text := "какой-то какойто Какой-то КАКОЙТО Какойто"
+		expected := []string{"какойто", "какой-то"}
+		require.Equal(t, expected, Top10(text))
+	})
+
+	t.Run("tie in word counts", func(t *testing.T) {
+		text := "слово1 слово2 слово1 слово2"
+		expected := []string{"слово1", "слово2"}
+		require.Equal(t, expected, Top10(text))
 	})
 
 	t.Run("positive test", func(t *testing.T) {
