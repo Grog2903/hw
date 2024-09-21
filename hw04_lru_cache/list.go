@@ -17,44 +17,8 @@ type ListItem struct {
 }
 
 type list struct {
-	front *ListItem
-	back  *ListItem
-	len   int
-}
-
-func (l *list) Len() int {
-	return l.len
-}
-
-func (l *list) Front() *ListItem {
-	return l.front
-}
-
-func (l *list) Back() *ListItem {
-	return l.back
-}
-
-func (l *list) PushFront(v interface{}) *ListItem {
-	newItem := &ListItem{
-		Value: v,
-		Next:  l.front,
-	}
-
-	if l.Back() == nil {
-		l.back = newItem
-	}
-
-	return &ListItem{v, nil, l.front}
-}
-
-func (l *list) PushBack(v interface{}) *ListItem {
-	return &ListItem{v, nil, l.front}
-}
-
-func (l *list) Remove(i *ListItem) {
-}
-
-func (l *list) MoveToFront(i *ListItem) {
+	List // Remove me after realization.
+	// Place your code here.
 }
 
 func NewList() List {
