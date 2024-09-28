@@ -24,13 +24,7 @@ func Run(tasks []Task, n, m int) error {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-
-			for {
-				task, ok := <-tasksChan
-				if !ok {
-					return
-				}
-
+			for task := range tasksChan {
 				if err := task(); err != nil {
 					mu.Lock()
 					errCount++
@@ -44,18 +38,13 @@ func Run(tasks []Task, n, m int) error {
 		mu.Lock()
 		if errCount >= m {
 			mu.Unlock()
-			close(tasksChan)
 			break
 		}
 		mu.Unlock()
 		tasksChan <- task
 	}
 
-	mu.Lock()
-	if errCount < m {
-		close(tasksChan)
-	}
-	mu.Unlock()
+	close(tasksChan)
 
 	wg.Wait()
 
