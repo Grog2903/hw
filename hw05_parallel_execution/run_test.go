@@ -68,29 +68,6 @@ func TestRun(t *testing.T) {
 		require.LessOrEqual(t, int64(elapsedTime), int64(sumTime/2), "tasks were run sequentially?")
 	})
 
-	t.Run("concurrency without sleep", func(t *testing.T) {
-		tasksCount := 10
-		workersCount := 10
-		maxErrorsCount := 1
-
-		tasks := make([]Task, 0, tasksCount)
-
-		var runTasksCount int32
-		for i := 0; i < tasksCount; i++ {
-			tasks = append(tasks, func() error {
-				t := time.NewTimer(time.Millisecond * 100)
-				<-t.C
-				atomic.AddInt32(&runTasksCount, 1)
-				return nil
-			})
-		}
-
-		require.Eventually(t, func() bool {
-			err := Run(tasks, workersCount, maxErrorsCount)
-			return err == nil
-		}, time.Millisecond*200, time.Millisecond)
-	})
-
 	t.Run("always return error where M is zero or less", func(t *testing.T) {
 		tasksCount := 50
 		tasks := make([]Task, 0, tasksCount)
@@ -117,5 +94,28 @@ func TestRun(t *testing.T) {
 		err = Run(tasks, workersCount, maxErrorsCount)
 		require.Truef(t, errors.Is(err, ErrErrorsLimitExceeded), "actual err - %v", err)
 		require.LessOrEqual(t, runTasksCount, int32(workersCount+maxErrorsCount), "extra tasks were started")
+	})
+
+	t.Run("concurrency without sleep", func(t *testing.T) {
+		tasksCount := 10
+		workersCount := 10
+		maxErrorsCount := 1
+
+		tasks := make([]Task, 0, tasksCount)
+
+		var runTasksCount int32
+		for i := 0; i < tasksCount; i++ {
+			tasks = append(tasks, func() error {
+				t := time.NewTimer(time.Millisecond * 100)
+				<-t.C
+				atomic.AddInt32(&runTasksCount, 1)
+				return nil
+			})
+		}
+
+		require.Eventually(t, func() bool {
+			err := Run(tasks, workersCount, maxErrorsCount)
+			return err == nil
+		}, time.Millisecond*200, time.Millisecond)
 	})
 }
