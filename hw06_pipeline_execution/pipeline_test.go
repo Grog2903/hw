@@ -90,4 +90,20 @@ func TestPipeline(t *testing.T) {
 		require.Len(t, result, 0)
 		require.Less(t, int64(elapsed), int64(abortDur)+int64(fault))
 	})
+
+	t.Run("single element", func(t *testing.T) {
+		in := make(Bi)
+
+		go func() {
+			in <- 1
+			close(in)
+		}()
+
+		result := make([]string, 0)
+		for s := range ExecutePipeline(in, nil, stages...) {
+			result = append(result, s.(string))
+		}
+
+		require.Equal(t, []string{"102"}, result)
+	})
 }
