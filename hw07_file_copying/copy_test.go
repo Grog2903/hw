@@ -2,10 +2,11 @@ package main
 
 import (
 	"errors"
-	"github.com/stretchr/testify/require"
 	"os"
 	"os/exec"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestCopy(t *testing.T) {
@@ -13,7 +14,6 @@ func TestCopy(t *testing.T) {
 		cmd := exec.Command("bash", "test.sh")
 
 		output, err := cmd.CombinedOutput()
-
 		if err != nil {
 			t.Logf("Output:\n%s", string(output))
 		}

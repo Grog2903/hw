@@ -3,9 +3,10 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/cheggaaa/pb/v3"
 	"io"
 	"os"
+
+	"github.com/cheggaaa/pb/v3"
 )
 
 var (
@@ -14,7 +15,7 @@ var (
 )
 
 func Copy(fromPath, toPath string, offset, limit int64) error {
-	sourceFile, err := os.OpenFile(fromPath, os.O_RDONLY, 0400)
+	sourceFile, err := os.OpenFile(fromPath, os.O_RDONLY, 0o400)
 	if err != nil {
 		return ErrUnsupportedFile
 	}
