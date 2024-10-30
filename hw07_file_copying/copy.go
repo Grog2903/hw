@@ -28,7 +28,7 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 
 	destinationFile, err := os.Create(toPath)
 	if err != nil {
-		return errors.New(fmt.Sprintf("create destination file to path: %s", toPath))
+		return fmt.Errorf("create destination file to path: %s", toPath)
 	}
 	defer destinationFile.Close()
 
