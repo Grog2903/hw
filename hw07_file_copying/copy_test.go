@@ -45,8 +45,9 @@ func TestCopy(t *testing.T) {
 	})
 
 	t.Run("urandom", func(t *testing.T) {
-		err := Copy("/dev/urandom", "testdata/input.txt", 0, 0)
+		err := Copy("/dev/urandom", "out.txt", 0, 0)
+		os.Remove("out.txt")
 
-		require.Truef(t, errors.Is(err, ErrZeroFileSize), "actual error %q", err)
+		require.NoError(t, err)
 	})
 }

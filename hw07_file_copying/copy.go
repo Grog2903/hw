@@ -28,10 +28,6 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 	}
 	fileSize := stat.Size()
 
-	if fileSize == 0 {
-		return ErrZeroFileSize
-	}
-
 	tmpFile, err := os.CreateTemp("./", "e-*.txt")
 	if err != nil {
 		return errors.New("create temp file")
@@ -40,6 +36,16 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 
 	if offset > stat.Size() {
 		return ErrOffsetExceedsFileSize
+	}
+
+	if fileSize == 0 {
+		destinationFile, err := os.Create(toPath)
+		if err != nil {
+			return fmt.Errorf("create destination file to path: %s", toPath)
+		}
+		defer destinationFile.Close()
+
+		return nil
 	}
 
 	if offset > 0 {
