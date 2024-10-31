@@ -15,61 +15,88 @@ var (
 )
 
 func Copy(fromPath, toPath string, offset, limit int64) error {
-	sourceFile, err := os.OpenFile(fromPath, os.O_RDONLY, 0o400)
+	sourceFile, fileSize, err := openSourceFile(fromPath)
 	if err != nil {
-		return ErrUnsupportedFile
+		return err
 	}
 	defer sourceFile.Close()
 
-	stat, err := sourceFile.Stat()
-	if err != nil {
-		return errors.New("get source file stat")
+	if offset > fileSize {
+		return ErrOffsetExceedsFileSize
 	}
-	fileSize := stat.Size()
+
+	if fileSize == 0 {
+		return createEmptyDestinationFile(toPath)
+	}
 
 	tmpFile, err := os.CreateTemp("./", "e-*.txt")
 	if err != nil {
 		return errors.New("create temp file")
 	}
 	defer os.Remove(tmpFile.Name())
+	defer tmpFile.Close()
 
-	if offset > stat.Size() {
-		return ErrOffsetExceedsFileSize
+	bytesToCopy := getBytesToCopy(fileSize, offset, limit)
+
+	if err = copySourceToTemp(sourceFile, tmpFile, offset, bytesToCopy); err != nil {
+		return err
 	}
 
-	if fileSize == 0 {
-		destinationFile, err := os.Create(toPath)
-		if err != nil {
-			return fmt.Errorf("create destination file to path: %s", toPath)
-		}
-		defer destinationFile.Close()
+	return copyWithProgress(toPath, tmpFile, bytesToCopy)
+}
 
-		return nil
-	}
-
+func copySourceToTemp(sourceFile *os.File, tmpFile *os.File, offset int64, bytesToCopy int64) error {
 	if offset > 0 {
-		_, err := sourceFile.Seek(offset, io.SeekStart)
-		if err != nil {
-			os.Remove(toPath)
+		if _, err := sourceFile.Seek(offset, io.SeekStart); err != nil {
 			return errors.New("seek source file offset")
 		}
 	}
 
+	if _, err := io.CopyN(tmpFile, sourceFile, bytesToCopy); err != nil {
+		return errors.New("copy file")
+	}
+
+	if _, err := tmpFile.Seek(0, io.SeekStart); err != nil {
+		return errors.New("seek temp file")
+	}
+
+	return nil
+}
+
+func getBytesToCopy(fileSize int64, offset int64, limit int64) int64 {
 	bytesToCopy := fileSize - offset
 	if limit > 0 && limit < bytesToCopy {
 		bytesToCopy = limit
 	}
 
-	_, err = io.CopyN(tmpFile, sourceFile, bytesToCopy)
+	return bytesToCopy
+}
+
+func openSourceFile(path string) (*os.File, int64, error) {
+	sourceFile, err := os.OpenFile(path, os.O_RDONLY, 0o400)
 	if err != nil {
-		return errors.New("copy file")
+		return nil, 0, ErrUnsupportedFile
 	}
 
-	_, err = tmpFile.Seek(0, io.SeekStart)
+	stat, err := sourceFile.Stat()
 	if err != nil {
-		return errors.New("seek temp file")
+		return nil, 0, errors.New("get source file stat")
 	}
+	fileSize := stat.Size()
 
+	return sourceFile, fileSize, nil
+}
+
+func createEmptyDestinationFile(path string) error {
+	dstFile, err := os.Create(path)
+	if err != nil {
+		return fmt.Errorf("create destination file to path: %s", path)
+	}
+	defer dstFile.Close()
+	return nil
+}
+
+func copyWithProgress(toPath string, tmpFile *os.File, bytesToCopy int64) error {
 	destinationFile, err := os.Create(toPath)
 	if err != nil {
 		return fmt.Errorf("create destination file to path: %s", toPath)
@@ -77,15 +104,13 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 	defer destinationFile.Close()
 
 	progressBar := pb.Simple.Start64(bytesToCopy)
-	progressBarReader := progressBar.NewProxyReader(tmpFile)
+	defer progressBar.Finish()
 
-	_, err = io.Copy(destinationFile, progressBarReader)
-	if err != nil {
+	progressBarReader := progressBar.NewProxyReader(tmpFile)
+	if _, err := io.Copy(destinationFile, progressBarReader); err != nil {
 		os.Remove(toPath)
 		return errors.New("copy file")
 	}
-
-	progressBar.Finish()
 
 	return nil
 }
