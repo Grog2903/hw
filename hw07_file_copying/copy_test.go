@@ -37,4 +37,16 @@ func TestCopy(t *testing.T) {
 
 		require.Truef(t, errors.Is(err, ErrOffsetExceedsFileSize), "actual error %q", err)
 	})
+
+	t.Run("sameNames", func(t *testing.T) {
+		err := Copy("testdata/input.txt", "testdata/input.txt", 0, 0)
+
+		require.NoError(t, err)
+	})
+
+	t.Run("urandom", func(t *testing.T) {
+		err := Copy("/dev/urandom", "testdata/input.txt", 0, 0)
+
+		require.Truef(t, errors.Is(err, ErrZeroFileSize), "actual error %q", err)
+	})
 }

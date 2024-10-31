@@ -12,6 +12,7 @@ import (
 var (
 	ErrUnsupportedFile       = errors.New("unsupported file")
 	ErrOffsetExceedsFileSize = errors.New("offset exceeds file size")
+	ErrZeroFileSize          = errors.New("zero file size")
 )
 
 func Copy(fromPath, toPath string, offset, limit int64) error {
@@ -27,14 +28,17 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 	}
 	fileSize := stat.Size()
 
-	destinationFile, err := os.Create(toPath)
-	if err != nil {
-		return fmt.Errorf("create destination file to path: %s", toPath)
+	if fileSize == 0 {
+		return ErrZeroFileSize
 	}
-	defer destinationFile.Close()
+
+	tmpFile, err := os.CreateTemp("./", "e-*.txt")
+	if err != nil {
+		return errors.New("create temp file")
+	}
+	defer os.Remove(tmpFile.Name())
 
 	if offset > stat.Size() {
-		os.Remove(toPath)
 		return ErrOffsetExceedsFileSize
 	}
 
@@ -51,10 +55,26 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 		bytesToCopy = limit
 	}
 
-	progressBar := pb.Simple.Start64(bytesToCopy)
-	progressBarReader := progressBar.NewProxyReader(io.LimitReader(sourceFile, bytesToCopy))
+	_, err = io.CopyN(tmpFile, sourceFile, bytesToCopy)
+	if err != nil {
+		return errors.New("copy file")
+	}
 
-	_, err = io.CopyN(destinationFile, progressBarReader, bytesToCopy)
+	_, err = tmpFile.Seek(0, io.SeekStart)
+	if err != nil {
+		return errors.New("seek temp file")
+	}
+
+	destinationFile, err := os.Create(toPath)
+	if err != nil {
+		return fmt.Errorf("create destination file to path: %s", toPath)
+	}
+	defer destinationFile.Close()
+
+	progressBar := pb.Simple.Start64(bytesToCopy)
+	progressBarReader := progressBar.NewProxyReader(tmpFile)
+
+	_, err = io.Copy(destinationFile, progressBarReader)
 	if err != nil {
 		os.Remove(toPath)
 		return errors.New("copy file")
