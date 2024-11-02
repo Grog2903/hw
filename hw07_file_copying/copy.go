@@ -52,7 +52,13 @@ func renameTempFile(path string, name string) error {
 	return os.Rename(name, path)
 }
 
-func copySourceToTemp(sourceFile *os.File, tmpFile *os.File, offset int64, bytesToCopy int64, progressBar *pb.ProgressBar) error {
+func copySourceToTemp(
+	sourceFile *os.File,
+	tmpFile *os.File,
+	offset int64,
+	bytesToCopy int64,
+	progressBar *pb.ProgressBar,
+) error {
 	if offset > 0 {
 		if _, err := sourceFile.Seek(offset, io.SeekStart); err != nil {
 			return errors.New("seek source file offset")
