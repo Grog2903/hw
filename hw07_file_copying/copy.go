@@ -29,35 +29,39 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 		return createEmptyDestinationFile(toPath)
 	}
 
-	tmpFile, err := os.CreateTemp("./", "e-*.txt")
+	tmpFile, err := os.CreateTemp("", "*.tmp")
 	if err != nil {
-		return errors.New("create temp file")
+		return err
 	}
 	defer os.Remove(tmpFile.Name())
 	defer tmpFile.Close()
 
 	bytesToCopy := getBytesToCopy(fileSize, offset, limit)
 
-	if err = copySourceToTemp(sourceFile, tmpFile, offset, bytesToCopy); err != nil {
+	progressBar := pb.Simple.Start64(bytesToCopy)
+	defer progressBar.Finish()
+
+	if err = copySourceToTemp(sourceFile, tmpFile, offset, bytesToCopy, progressBar); err != nil {
 		return err
 	}
 
-	return copyWithProgress(toPath, tmpFile, bytesToCopy)
+	return renameTempFile(toPath, tmpFile.Name())
 }
 
-func copySourceToTemp(sourceFile *os.File, tmpFile *os.File, offset int64, bytesToCopy int64) error {
+func renameTempFile(path string, name string) error {
+	return os.Rename(name, path)
+}
+
+func copySourceToTemp(sourceFile *os.File, tmpFile *os.File, offset int64, bytesToCopy int64, progressBar *pb.ProgressBar) error {
 	if offset > 0 {
 		if _, err := sourceFile.Seek(offset, io.SeekStart); err != nil {
 			return errors.New("seek source file offset")
 		}
 	}
 
-	if _, err := io.CopyN(tmpFile, sourceFile, bytesToCopy); err != nil {
+	progressBarReader := progressBar.NewProxyReader(sourceFile)
+	if _, err := io.CopyN(tmpFile, progressBarReader, bytesToCopy); err != nil {
 		return errors.New("copy file")
-	}
-
-	if _, err := tmpFile.Seek(0, io.SeekStart); err != nil {
-		return errors.New("seek temp file")
 	}
 
 	return nil
@@ -93,24 +97,5 @@ func createEmptyDestinationFile(path string) error {
 		return fmt.Errorf("create destination file to path: %s", path)
 	}
 	defer dstFile.Close()
-	return nil
-}
-
-func copyWithProgress(toPath string, tmpFile *os.File, bytesToCopy int64) error {
-	destinationFile, err := os.Create(toPath)
-	if err != nil {
-		return fmt.Errorf("create destination file to path: %s", toPath)
-	}
-	defer destinationFile.Close()
-
-	progressBar := pb.Simple.Start64(bytesToCopy)
-	defer progressBar.Finish()
-
-	progressBarReader := progressBar.NewProxyReader(tmpFile)
-	if _, err := io.Copy(destinationFile, progressBarReader); err != nil {
-		os.Remove(toPath)
-		return errors.New("copy file")
-	}
-
 	return nil
 }
