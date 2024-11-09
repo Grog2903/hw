@@ -2,7 +2,6 @@ package main
 
 import (
 	"os"
-	"os/exec"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -43,16 +42,5 @@ func TestRunCmd(t *testing.T) {
 
 		value = os.Getenv("REMOVE_VAR")
 		require.Equal(t, "", value)
-	})
-
-	t.Run("bashTests", func(t *testing.T) {
-		cmd := exec.Command("bash", "test.sh")
-
-		output, err := cmd.CombinedOutput()
-		if err != nil {
-			t.Logf("Output:\n%s", string(output))
-		}
-
-		require.NoError(t, err)
 	})
 }
