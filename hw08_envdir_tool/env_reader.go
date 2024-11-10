@@ -24,13 +24,14 @@ func ReadDir(dir string) (Environment, error) {
 		if file.IsDir() {
 			continue
 		}
+		fileName := strings.TrimSpace(file.Name())
 
-		value, needRemove, err := processEnvFile(dir, file.Name())
+		value, needRemove, err := processEnvFile(dir, fileName)
 		if err != nil {
 			return nil, err
 		}
 
-		env[file.Name()] = EnvValue{
+		env[fileName] = EnvValue{
 			Value:      value,
 			NeedRemove: needRemove,
 		}
