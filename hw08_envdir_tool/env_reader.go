@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"os"
 	"strings"
 )
@@ -25,6 +26,9 @@ func ReadDir(dir string) (Environment, error) {
 			continue
 		}
 		fileName := strings.TrimSpace(file.Name())
+		if strings.Contains(fileName, "=") {
+			return nil, errors.New("incorrect file name: " + fileName)
+		}
 
 		value, needRemove, err := processEnvFile(dir, fileName)
 		if err != nil {
