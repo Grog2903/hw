@@ -3,9 +3,10 @@ package hw10programoptimization
 import (
 	"bufio"
 	"fmt"
-	"github.com/goccy/go-json"
 	"io"
 	"strings"
+
+	"github.com/goccy/go-json"
 )
 
 type User struct {
