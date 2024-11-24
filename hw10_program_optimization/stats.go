@@ -13,43 +13,31 @@ type User struct {
 	Email string
 }
 
-type users []User
-
 type DomainStat map[string]int
 
 func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
-	u, err := getUsers(r)
-	if err != nil {
-		return nil, fmt.Errorf("get users error: %w", err)
-	}
-	return countDomains(u, domain)
-}
-
-func getUsers(r io.Reader) (result users, err error) {
 	var user User
+	result := make(DomainStat)
+
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
-		if err = json.Unmarshal(scanner.Bytes(), &user); err != nil {
+		if err := json.Unmarshal(scanner.Bytes(), &user); err != nil {
 			continue
 		}
 
-		result = append(result, user)
+		atIndex := strings.LastIndex(user.Email, "@")
+		if atIndex == -1 {
+			continue
+		}
+		secPart := strings.ToLower(user.Email[atIndex+1:])
+		if strings.HasSuffix(secPart, domain) {
+			result[secPart]++
+		}
 	}
 
 	if err := scanner.Err(); err != nil {
-		return result, fmt.Errorf("scanner error: %w", err)
+		return nil, fmt.Errorf("scanner error: %w", err)
 	}
 
-	return result, nil
-}
-
-func countDomains(u users, domain string) (DomainStat, error) {
-	result := make(DomainStat)
-
-	for _, user := range u {
-		if strings.Contains(user.Email, domain) {
-			result[strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])]++
-		}
-	}
 	return result, nil
 }
