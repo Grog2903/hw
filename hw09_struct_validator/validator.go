@@ -9,13 +9,15 @@ import (
 	"strings"
 )
 
-var ErrInvalidRule = errors.New("invalid rule")
-var ErrInvalidParam = errors.New("invalid validation param")
-var ErrBigValue = errors.New("value bigger than max")
-var ErrSmallValue = errors.New("value less than max")
-var ErrNotInValue = errors.New("value not available")
-var ErrIncorrectLength = errors.New("incorrect length")
-var ErrRegexp = errors.New("invalid regexp")
+var (
+	ErrInvalidRule     = errors.New("invalid rule")
+	ErrInvalidParam    = errors.New("invalid validation param")
+	ErrBigValue        = errors.New("value bigger than max")
+	ErrSmallValue      = errors.New("value less than max")
+	ErrNotInValue      = errors.New("value not available")
+	ErrIncorrectLength = errors.New("incorrect length")
+	ErrRegexp          = errors.New("invalid regexp")
+)
 
 type ValidationError struct {
 	Field string
@@ -89,6 +91,7 @@ func applyRule(rule string, value reflect.Value) error {
 	}
 	validateMethod, validateParam := ruleParts[0], ruleParts[1]
 
+	//nolint:exhaustive
 	switch value.Kind() {
 	case reflect.String:
 		return validateString(value.String(), validateMethod, validateParam)
@@ -100,6 +103,8 @@ func applyRule(rule string, value reflect.Value) error {
 				return err
 			}
 		}
+	default:
+		return nil
 	}
 
 	return nil
