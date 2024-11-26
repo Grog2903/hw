@@ -2,8 +2,11 @@ package hw09structvalidator
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 type UserRole string
@@ -42,10 +45,41 @@ func TestValidate(t *testing.T) {
 		expectedErr error
 	}{
 		{
-			// Place your code here.
+			in: User{
+				ID:     "123456789012345678901234567890123456",
+				Age:    20,
+				Email:  "test@test.ru",
+				Role:   UserRole("admin"),
+				Phones: []string{"12345678912", "12345678912"},
+			},
+			expectedErr: nil,
 		},
-		// ...
-		// Place your code here.
+		{
+			in: User{
+				ID:     "123456789012345678901234567890123456",
+				Age:    20,
+				Email:  "test@test.ru",
+				Role:   UserRole("admin"),
+				Phones: []string{"12345678912", "1234567891212323"},
+			},
+			expectedErr: ErrIncorrectLength,
+		},
+		{
+			in: App{
+				Version: "0.0.12",
+			},
+			expectedErr: ErrIncorrectLength,
+		},
+		{
+			in:          Token{},
+			expectedErr: nil,
+		},
+		{
+			in: Response{
+				Code: 200,
+			},
+			expectedErr: nil,
+		},
 	}
 
 	for i, tt := range tests {
@@ -53,8 +87,14 @@ func TestValidate(t *testing.T) {
 			tt := tt
 			t.Parallel()
 
-			// Place your code here.
-			_ = tt
+			validateError, _ := Validate(tt.in)
+			if tt.expectedErr != nil {
+				require.Error(t, validateError)
+
+				require.True(t, errors.Is(validateError, tt.expectedErr))
+			} else {
+				require.True(t, validateError.Error() == "")
+			}
 		})
 	}
 }
