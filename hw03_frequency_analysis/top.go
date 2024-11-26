@@ -1,12 +1,9 @@
 package hw03frequencyanalysis
 
 import (
-	"regexp"
 	"sort"
 	"strings"
 )
-
-var reg = regexp.MustCompile(`^[.,;:!?']+|[.,;:!?']+$`)
 
 func Top10(text string) []string {
 	split := strings.Fields(text)
@@ -14,17 +11,7 @@ func Top10(text string) []string {
 	result := make([]string, 0, 10)
 
 	for _, word := range split {
-		if word == "-" {
-			continue
-		}
-
-		lowerKeyAndReg := reg.ReplaceAllString(strings.ToLower(word), "")
-
-		if lowerKeyAndReg == "" {
-			continue
-		}
-
-		counterMap[lowerKeyAndReg]++
+		counterMap[word]++
 	}
 
 	type keyValueStruct struct {
