@@ -52,14 +52,15 @@ func (v ValidationErrors) Is(target error) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
-func Validate(v interface{}) ValidationErrors {
+func Validate(v interface{}) (ValidationErrors, error) {
 	var ValidationErrors ValidationErrors
 	val := reflect.ValueOf(v)
 	if val.Kind() != reflect.Struct {
-		return nil
+		return nil, nil
 	}
 
 	st := reflect.TypeOf(v)
@@ -74,20 +75,24 @@ func Validate(v interface{}) ValidationErrors {
 
 		rules := strings.Split(validateTag, "|")
 		for _, rule := range rules {
-			err := applyRule(rule, value)
+			validationErr, err := applyRule(rule, value)
+			if validationErr != nil {
+				ValidationErrors = append(ValidationErrors, ValidationError{Field: field.Name, Err: validationErr})
+			}
+
 			if err != nil {
-				ValidationErrors = append(ValidationErrors, ValidationError{Field: field.Name, Err: err})
+				return nil, err
 			}
 		}
 	}
 
-	return ValidationErrors
+	return ValidationErrors, nil
 }
 
-func applyRule(rule string, value reflect.Value) error {
+func applyRule(rule string, value reflect.Value) (error, error) {
 	ruleParts := strings.SplitN(rule, ":", 2)
 	if len(ruleParts) != 2 {
-		return ErrInvalidRule
+		return ErrInvalidRule, nil
 	}
 	validateMethod, validateParam := ruleParts[0], ruleParts[1]
 
@@ -99,81 +104,85 @@ func applyRule(rule string, value reflect.Value) error {
 		return validateInt(int(value.Int()), validateMethod, validateParam)
 	case reflect.Slice:
 		for i := 0; i < value.Len(); i++ {
-			if err := applyRule(rule, value.Index(i)); err != nil {
-				return err
+			validationErr, err := applyRule(rule, value.Index(i))
+			if err != nil {
+				return nil, err
+			}
+			if validationErr != nil {
+				return validationErr, nil
 			}
 		}
 	default:
-		return nil
+		return nil, nil
 	}
 
-	return nil
+	return nil, nil
 }
 
-func validateInt(value int, method string, param string) error {
+func validateInt(value int, method string, param string) (error, error) {
 	switch method {
 	case "max":
 		maxValue, err := strconv.Atoi(param)
 		if err != nil {
-			return ErrInvalidParam
+			return nil, err
 		}
 		if value > maxValue {
-			return ErrBigValue
+			return ErrBigValue, nil
 		}
 	case "min":
 		minValue, err := strconv.Atoi(param)
 		if err != nil {
-			return ErrInvalidParam
+			return nil, err
 		}
 		if value < minValue {
-			return ErrSmallValue
+			return ErrSmallValue, nil
 		}
 	case "in":
 		options := strings.Split(param, ",")
 		for _, option := range options {
 			optionValue, err := strconv.Atoi(option)
 			if err != nil {
-				return ErrInvalidParam
+				return nil, err
 			}
 			if optionValue == value {
-				return nil
+				return nil, nil
 			}
 		}
 
-		return ErrNotInValue
+		return ErrNotInValue, nil
 	}
 
-	return nil
+	return nil, nil
 }
 
-func validateString(value string, method string, param string) error {
+func validateString(value string, method string, param string) (error, error) {
 	switch method {
 	case "len":
 		length, err := strconv.Atoi(param)
 		if err != nil {
-			return ErrInvalidParam
+			return nil, err
 		}
 
 		if len(value) != length {
-			return ErrIncorrectLength
+			return ErrIncorrectLength, nil
 		}
 	case "regexp":
 		re, err := regexp.Compile(param)
 		if err != nil {
-			return ErrInvalidParam
+			return nil, err
 		}
 		if !re.MatchString(value) {
-			return ErrRegexp
+			return ErrRegexp, nil
 		}
 	case "in":
 		options := strings.Split(param, ",")
 		for _, option := range options {
 			if value == option {
-				return nil
+				return nil, nil
 			}
 		}
-		return ErrNotInValue
+		return ErrNotInValue, nil
 	}
 
-	return nil
+	return nil, nil
 }

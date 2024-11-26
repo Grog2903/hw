@@ -87,12 +87,13 @@ func TestValidate(t *testing.T) {
 			tt := tt
 			t.Parallel()
 
-			result := Validate(tt.in)
+			validateError, _ := Validate(tt.in)
 			if tt.expectedErr != nil {
-				require.Error(t, result)
-				require.True(t, errors.Is(result, tt.expectedErr))
+				require.Error(t, validateError)
+
+				require.True(t, errors.Is(validateError, tt.expectedErr))
 			} else {
-				require.True(t, result.Error() == "")
+				require.True(t, validateError.Error() == "")
 			}
 		})
 	}
