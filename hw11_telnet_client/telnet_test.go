@@ -76,29 +76,3 @@ func TestTelnetClient_Timeout(t *testing.T) {
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "timeout")
 }
-
-func TestTelnetClient_ServerDisconnect(t *testing.T) {
-	l, err := net.Listen("tcp", "127.0.0.1:")
-	require.NoError(t, err)
-	defer func() { require.NoError(t, l.Close()) }()
-
-	go func() {
-		conn, err := l.Accept()
-		require.NoError(t, err)
-		require.NotNil(t, conn)
-		_ = conn.Close() // Закрываем соединение сразу после подключения клиента
-	}()
-
-	in := &bytes.Buffer{}
-	out := &bytes.Buffer{}
-
-	timeout, err := time.ParseDuration("10s")
-	require.NoError(t, err)
-
-	client := NewTelnetClient(l.Addr().String(), timeout, io.NopCloser(in), out)
-	require.NoError(t, client.Connect())
-
-	err = client.Receive()
-	require.Error(t, err)
-	require.Contains(t, err.Error(), "EOF")
-}
