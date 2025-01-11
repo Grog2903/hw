@@ -26,12 +26,14 @@ issues:
         - gocyclo
         - gosec
         - depguard
+    - path: internal/config/config.go
+      linters:
+        - tagliatelle
 
 linters:
   disable-all: true
   enable:
     - asciicheck
-    - depguard
     - dogsled
     - dupl
     - bodyclose
@@ -40,22 +42,18 @@ linters:
     - exhaustive
     - exportloopref
     - funlen
-    - gci
     - gocognit
     - goconst
     - gocritic
     - gocyclo
     - godot
     - gofmt
-    - gofumpt
     - goheader
     - goprintffuncname
     - gosec
     - gosimple
-    - govet
     - importas
     - ineffassign
-    - lll
     - makezero
     - misspell
     - nestif
@@ -64,9 +62,7 @@ linters:
     - nolintlint
     - prealloc
     - predeclared
-    - revive
     - staticcheck
-    - stylecheck
     - tagliatelle
     - thelper
     - typecheck

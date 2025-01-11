@@ -1,0 +1,13 @@
+env: local
+
+logger:
+  level: "info"
+
+server:
+  host: "127.0.0.1"
+  port: "8080"
+
+storage:
+  type: "memory"
+  sql:
+    dsn: "user=calendar password=calendar dbname=calendar sslmode=disable"
