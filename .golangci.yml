@@ -65,7 +65,6 @@ linters:
     - staticcheck
     - tagliatelle
     - thelper
-    - typecheck
     - unconvert
     - unparam
     - unused
