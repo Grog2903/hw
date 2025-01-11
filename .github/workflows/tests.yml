@@ -76,6 +76,7 @@ jobs:
         run: |
           cd hw12_13_14_15_calendar
           go mod tidy
+          go mod vendor
 
       - name: make lint
         run: make lint
