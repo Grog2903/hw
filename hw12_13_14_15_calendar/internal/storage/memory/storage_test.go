@@ -2,7 +2,7 @@ package memorystorage
 
 import (
 	"context"
-	"github.com/Grog2903/hw/hw12_13_14_15_calendar/internal/storage"
+	"github.com/Grog2903/hw/hw12_13_14_15_calendar/internal/model"
 	"testing"
 	"time"
 )
@@ -10,7 +10,7 @@ import (
 func TestStorage_CreateEvent(t *testing.T) {
 	testStorage := New()
 
-	event := storage.Event{
+	event := model.Event{
 		Title:     "Test Event",
 		StartTime: time.Now(),
 		Duration:  time.Hour,
@@ -35,7 +35,7 @@ func TestStorage_CreateEvent(t *testing.T) {
 func TestStorage_UpdateEvent(t *testing.T) {
 	testStorage := New()
 
-	event := storage.Event{
+	event := model.Event{
 		Title:     "Test Event",
 		StartTime: time.Now(),
 		Duration:  time.Hour,
@@ -47,7 +47,7 @@ func TestStorage_UpdateEvent(t *testing.T) {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	updatedEvent := storage.Event{
+	updatedEvent := model.Event{
 		Title:     "Updated Event",
 		StartTime: event.StartTime,
 		Duration:  2 * time.Hour,
@@ -77,7 +77,7 @@ func TestStorage_UpdateEvent(t *testing.T) {
 func TestStorage_DeleteEvent(t *testing.T) {
 	testStorage := New()
 
-	event := storage.Event{
+	event := model.Event{
 		Title:     "Test Event",
 		StartTime: time.Now(),
 		Duration:  time.Hour,
@@ -107,19 +107,19 @@ func TestStorage_DeleteEvent(t *testing.T) {
 func TestStorage_GetEvents(t *testing.T) {
 	testStorage := New()
 
-	event1 := storage.Event{
+	event1 := model.Event{
 		Title:     "Event 1",
 		StartTime: time.Now(),
 		Duration:  time.Hour,
 		UserID:    "user1",
 	}
-	event2 := storage.Event{
+	event2 := model.Event{
 		Title:     "Event 2",
 		StartTime: time.Now().AddDate(0, 0, 1),
 		Duration:  2 * time.Hour,
 		UserID:    "user2",
 	}
-	event3 := storage.Event{
+	event3 := model.Event{
 		Title:     "Event 3",
 		StartTime: time.Now().AddDate(0, 0, 2),
 		Duration:  time.Hour,

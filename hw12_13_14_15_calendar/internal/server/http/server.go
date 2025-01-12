@@ -2,8 +2,8 @@ package internalhttp
 
 import (
 	"context"
-	"github.com/Grog2903/hw/hw12_13_14_15_calendar/internal/app"
 	"github.com/Grog2903/hw/hw12_13_14_15_calendar/internal/config"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"log/slog"
 	"net"
 	"net/http"
@@ -12,10 +12,9 @@ import (
 type Server struct {
 	httpServer *http.Server
 	logger     slog.Logger
-	app        app.App
 }
 
-func NewServer(logger slog.Logger, cfg config.Config, app app.App) *Server {
+func NewServer(logger slog.Logger, cfg config.Config) *Server {
 	return &Server{
 		logger: logger,
 		httpServer: &http.Server{
@@ -24,16 +23,10 @@ func NewServer(logger slog.Logger, cfg config.Config, app app.App) *Server {
 			WriteTimeout: cfg.Server.Timeout,
 			IdleTimeout:  cfg.Server.IdleTimeout,
 		},
-		app: app,
 	}
 }
 
-func (s *Server) Start(ctx context.Context) error {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte("hello"))
-	})
+func (s *Server) Start(mux *runtime.ServeMux) error {
 	s.httpServer.Handler = loggingMiddleware(mux)
 	s.logger.Info("starting http server with address", "address", s.httpServer.Addr)
 

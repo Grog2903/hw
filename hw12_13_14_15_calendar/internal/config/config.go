@@ -7,10 +7,11 @@ import (
 )
 
 type Config struct {
-	Env     string `yaml:"env"`
-	Logger  LoggerConf
-	Server  ServerConf
-	Storage StorageConf
+	Env        string `yaml:"env"`
+	Logger     LoggerConf
+	Server     ServerConf
+	GRPCServer GRPCServer
+	Storage    StorageConf
 }
 
 type EnvConf struct {
@@ -35,6 +36,11 @@ type StorageConf struct {
 
 type SQLConf struct {
 	DSN string
+}
+
+type GRPCServer struct {
+	Host string
+	Port string
 }
 
 func LoadConfig(path string) (*Config, error) {
