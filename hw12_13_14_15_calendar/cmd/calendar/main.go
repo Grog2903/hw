@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/Grog2903/hw/hw12_13_14_15_calendar/internal/api/event"
 	"github.com/Grog2903/hw/hw12_13_14_15_calendar/internal/config"
+	"github.com/Grog2903/hw/hw12_13_14_15_calendar/internal/logger"
 	sqlstorage "github.com/Grog2903/hw/hw12_13_14_15_calendar/internal/storage/sql"
 	desc "github.com/Grog2903/hw/hw12_13_14_15_calendar/pkg/api/event/v1"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -26,11 +27,8 @@ import (
 
 var configFile string
 
-func init() {
-	flag.StringVar(&configFile, "config", "/etc/calendar/config.yaml", "Path to configuration file")
-}
-
 func main() {
+	flag.StringVar(&configFile, "config", "configs/config.yaml", "Path to configuration file")
 	flag.Parse()
 
 	if flag.Arg(0) == "version" {
@@ -43,7 +41,7 @@ func main() {
 		panic(err)
 	}
 
-	logg := setupLogger(cfg.Env)
+	logg := logger.SetupLogger(cfg.Env)
 
 	var storage isevent.Storage
 	switch cfg.Storage.Type {

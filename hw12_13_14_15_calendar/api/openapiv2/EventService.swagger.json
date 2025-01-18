@@ -35,11 +35,11 @@
         },
         "parameters": [
           {
-            "name": "body",
+            "name": "event",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/eventCreateRequest"
+              "$ref": "#/definitions/eventEventInfo"
             }
           }
         ],
@@ -219,14 +219,6 @@
         }
       }
     },
-    "eventCreateRequest": {
-      "type": "object",
-      "properties": {
-        "event": {
-          "$ref": "#/definitions/eventEventInfo"
-        }
-      }
-    },
     "eventCreateResponse": {
       "type": "object",
       "properties": {
@@ -259,44 +251,29 @@
         "duration": {
           "type": "string"
         },
-        "Description": {
+        "description": {
           "type": "string"
         },
         "userId": {
           "type": "string"
         },
-        "notification": {
-          "$ref": "#/definitions/eventNotification"
+        "notifyBefore": {
+          "type": "string"
+        },
+        "sent": {
+          "type": "boolean"
         }
       }
     },
     "eventGetResponse": {
       "type": "object",
       "properties": {
-        "event": {
+        "events": {
           "type": "array",
           "items": {
             "type": "object",
             "$ref": "#/definitions/eventEvent"
           }
-        }
-      }
-    },
-    "eventNotification": {
-      "type": "object",
-      "properties": {
-        "eventId": {
-          "type": "string"
-        },
-        "title": {
-          "type": "string"
-        },
-        "date": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "userId": {
-          "type": "string"
         }
       }
     },

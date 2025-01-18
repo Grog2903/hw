@@ -17,6 +17,7 @@ linters-settings:
           - github.com/goccy/go-json
           - github.com/jmoiron/sqlx
           - github.com/google/uuid
+          - github.com/rabbitmq/amqp091-go
           - github.com/grpc-ecosystem/grpc-gateway/v2/runtime
           - github.com/Grog2903/hw/hw12_13_14_15_calendar/internal/config
           - github.com/Grog2903/hw/hw12_13_14_15_calendar/internal/converter/server
@@ -28,7 +29,12 @@ linters-settings:
           - github.com/Grog2903/hw/hw12_13_14_15_calendar/pkg/api/event/v1
           - github.com/Grog2903/hw/hw12_13_14_15_calendar/internal/server/grpc
           - github.com/Grog2903/hw/hw12_13_14_15_calendar/internal/server/http
-
+          - github.com/Grog2903/hw/hw12_13_14_15_calendar/internal/loggers
+          - github.com/Grog2903/hw/hw12_13_14_15_calendar/internal/queue/rabbitmq
+          - github.com/Grog2903/hw/hw12_13_14_15_calendar/internal/service/sender
+          - github.com/Grog2903/hw/hw12_13_14_15_calendar/internal/logger
+          - github.com/Grog2903/hw/hw12_13_14_15_calendar/internal/queue/rabbitmq
+          - github.com/Grog2903/hw/hw12_13_14_15_calendar/internal/service/scheduler
 
 issues:
   exclude-rules:
