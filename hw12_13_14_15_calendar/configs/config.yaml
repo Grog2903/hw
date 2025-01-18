@@ -11,3 +11,7 @@ storage:
   type: "memory"
   sql:
     dsn: "user=calendar password=calendar dbname=calendar sslmode=disable"
+
+grpc_server:
+  host: "localhost"
+  port: "50051"

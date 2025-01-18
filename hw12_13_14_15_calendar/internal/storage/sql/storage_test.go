@@ -3,7 +3,7 @@ package sqlstorage
 import (
 	"context"
 	"github.com/Grog2903/hw/hw12_13_14_15_calendar/internal/config"
-	"github.com/Grog2903/hw/hw12_13_14_15_calendar/internal/storage"
+	"github.com/Grog2903/hw/hw12_13_14_15_calendar/internal/model"
 	"github.com/stretchr/testify/require"
 	"os"
 	"path/filepath"
@@ -57,7 +57,7 @@ func TestStorage_CreateEvent(t *testing.T) {
 	testStorage, cleanup := setupTestDB(ctx, t)
 	defer cleanup()
 
-	event := storage.Event{
+	event := model.Event{
 		Title:       "Test Event",
 		StartTime:   time.Now(),
 		Duration:    time.Hour,
@@ -79,7 +79,7 @@ func TestStorage_UpdateEvent(t *testing.T) {
 	testStorage, cleanup := setupTestDB(ctx, t)
 	defer cleanup()
 
-	event := storage.Event{
+	event := model.Event{
 		Title:       "Initial Event",
 		StartTime:   time.Now(),
 		Duration:    time.Hour,
@@ -89,7 +89,7 @@ func TestStorage_UpdateEvent(t *testing.T) {
 	eventID, err := testStorage.CreateEvent(ctx, event)
 	require.NoError(t, err, "unexpected error during event creation")
 
-	updatedEvent := storage.Event{
+	updatedEvent := model.Event{
 		ID:          eventID,
 		Title:       "Updated Event",
 		StartTime:   event.StartTime.Add(2 * time.Hour),
@@ -110,7 +110,7 @@ func TestStorage_DeleteEvent(t *testing.T) {
 	testStorage, cleanup := setupTestDB(ctx, t)
 	defer cleanup()
 
-	event := storage.Event{
+	event := model.Event{
 		Title:       "Test Event",
 		StartTime:   time.Now(),
 		Duration:    time.Hour,
@@ -135,13 +135,13 @@ func TestStorage_GetEvents(t *testing.T) {
 	defer cleanup()
 	now := time.Date(2024, 8, 25, 0, 0, 0, 0, time.UTC)
 
-	event1 := storage.Event{
+	event1 := model.Event{
 		Title:       "Event 1",
 		StartTime:   now,
 		Duration:    time.Hour,
 		Description: "First event",
 	}
-	event2 := storage.Event{
+	event2 := model.Event{
 		Title:       "Event 2",
 		StartTime:   now.AddDate(0, 0, 1),
 		Duration:    2 * time.Hour,

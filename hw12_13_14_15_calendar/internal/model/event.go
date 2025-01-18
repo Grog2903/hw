@@ -1,4 +1,4 @@
-package storage
+package model
 
 import (
 	"errors"
@@ -18,5 +18,12 @@ type Event struct {
 	Duration     time.Duration
 	Description  string
 	UserID       string
-	Notification *time.Duration
+	Notification *Notification
+}
+
+type Notification struct {
+	EventID string
+	Title   string
+	Date    time.Time
+	UserID  string
 }
