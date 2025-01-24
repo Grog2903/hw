@@ -8,6 +8,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.25.1
 	github.com/jmoiron/sqlx v1.4.0
+	github.com/lib/pq v1.10.9
 	github.com/rabbitmq/amqp091-go v1.10.0
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/net v0.33.0

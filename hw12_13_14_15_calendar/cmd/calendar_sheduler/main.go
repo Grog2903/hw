@@ -36,7 +36,7 @@ func run() int {
 	case "inMemory":
 		storage = memorystorage.New()
 	case "sql":
-		sqlStorage := sqlstorage.New()
+		sqlStorage := sqlstorage.New(nil)
 		ctx := context.Background()
 		if err := sqlStorage.Connect(ctx, *cfg); err != nil {
 			logg.Error("failed connect to database: " + err.Error())
@@ -49,7 +49,7 @@ func run() int {
 	eventQueue, err := queue.NewQueue(cfg)
 	if err != nil {
 		logg.Error("failed to create queue: " + err.Error())
-		return 1 // Возвращаем код ошибки, чтобы завершить программу
+		return 1
 	}
 
 	eventScheduler := scheduler.NewScheduler(*logg, storage, eventQueue)

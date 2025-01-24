@@ -35,6 +35,7 @@ linters-settings:
           - github.com/Grog2903/hw/hw12_13_14_15_calendar/internal/logger
           - github.com/Grog2903/hw/hw12_13_14_15_calendar/internal/queue/rabbitmq
           - github.com/Grog2903/hw/hw12_13_14_15_calendar/internal/service/scheduler
+          - github.com/lib/pq
 
 issues:
   exclude-rules:

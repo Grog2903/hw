@@ -13,8 +13,8 @@ import (
 var configFile string
 
 func main() {
-	flag.Parse()
 	flag.StringVar(&configFile, "config", "configs/calendar.yaml", "Path to configuration file")
+	flag.Parse()
 
 	cfg, err := config.LoadConfig(configFile)
 	if err != nil {
