@@ -234,7 +234,6 @@ func (s *CalendarServiceSuite) createDirectItem(event model.Event) {
 	if rows != 1 {
 		s.Fail("expected to affect 1 row")
 	}
-
 }
 
 func parseDuration(durationStr string) (time.Duration, error) {
