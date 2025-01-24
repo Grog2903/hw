@@ -12,6 +12,8 @@ type Config struct {
 	Server     ServerConf
 	GRPCServer GRPCServer
 	Storage    StorageConf
+	RabbitMQ   RabbitMQ
+	Scheduler  Scheduler
 }
 
 type EnvConf struct {
@@ -41,6 +43,17 @@ type SQLConf struct {
 type GRPCServer struct {
 	Host string
 	Port string
+}
+
+type RabbitMQ struct {
+	Host     string `yaml:"host" env-default:"localhost"`
+	Port     string `yaml:"port" env-default:"5672"`
+	Username string `yaml:"username" env-required:"true"`
+	Password string `yaml:"password" env-required:"true"`
+}
+
+type Scheduler struct {
+	LaunchFrequency time.Duration `yaml:"launch_frequency" env-default:"1m"`
 }
 
 func LoadConfig(path string) (*Config, error) {
