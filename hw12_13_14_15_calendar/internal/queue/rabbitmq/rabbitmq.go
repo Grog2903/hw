@@ -9,9 +9,9 @@ import (
 )
 
 type Queue struct {
-	connection *amqp.Connection
-	channel    *amqp.Channel
-	queue      *amqp.Queue
+	Connection *amqp.Connection
+	Channel    *amqp.Channel
+	Queue      *amqp.Queue
 }
 
 func NewQueue(cfg *config.Config) (*Queue, error) {
@@ -40,16 +40,16 @@ func NewQueue(cfg *config.Config) (*Queue, error) {
 	}
 
 	return &Queue{
-		connection: conn,
-		channel:    ch,
-		queue:      &q,
+		Connection: conn,
+		Channel:    ch,
+		Queue:      &q,
 	}, nil
 }
 
 func (q *Queue) Send(msg string) error {
-	err := q.channel.Publish(
+	err := q.Channel.Publish(
 		"",
-		q.queue.Name,
+		q.Queue.Name,
 		false,
 		false,
 		amqp.Publishing{
@@ -66,8 +66,8 @@ func (q *Queue) Send(msg string) error {
 }
 
 func (q *Queue) Receive() (<-chan string, error) {
-	msgs, err := q.channel.Consume(
-		q.queue.Name,
+	msgs, err := q.Channel.Consume(
+		q.Queue.Name,
 		"",
 		true,
 		false,

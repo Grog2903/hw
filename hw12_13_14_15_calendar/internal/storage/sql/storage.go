@@ -7,6 +7,8 @@ import (
 	"github.com/Grog2903/hw/hw12_13_14_15_calendar/internal/model"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -15,8 +17,8 @@ type Storage struct {
 	db *sqlx.DB
 }
 
-func New() *Storage {
-	return &Storage{}
+func New(db *sqlx.DB) *Storage {
+	return &Storage{db}
 }
 
 func (s *Storage) Connect(ctx context.Context, cfg config.Config) error {
@@ -50,13 +52,13 @@ func (s *Storage) CreateEvent(ctx context.Context, event model.Event) (uuid.UUID
 	result, err := s.db.ExecContext(
 		ctx,
 		`INSERT INTO event (id, title, start_time, description, duration, notify_before, user_id) 
-			VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+			VALUES ($1, $2, $3, $4, $5::interval, $6::interval, $7)`,
 		eventUuid.String(),
 		event.Title,
 		event.StartTime,
 		event.Description,
-		event.Duration,
-		event.NotifyBefore,
+		fmt.Sprintf("%v", event.Duration),
+		fmt.Sprintf("%v", event.NotifyBefore),
 		event.UserID,
 	)
 
@@ -77,7 +79,7 @@ func (s *Storage) CreateEvent(ctx context.Context, event model.Event) (uuid.UUID
 }
 
 func (s *Storage) UpdateEvent(ctx context.Context, id uuid.UUID, event model.Event) error {
-	result, err := s.db.ExecContext(ctx, "UPDATE event SET title=$1 WHERE id=$2", event.Title, id.String())
+	result, err := s.db.ExecContext(ctx, "UPDATE event SET title=$1, description=$2 WHERE id=$3", event.Title, event.Description, id.String())
 	if err != nil {
 		return err
 	}
@@ -95,34 +97,54 @@ func (s *Storage) UpdateEvent(ctx context.Context, id uuid.UUID, event model.Eve
 }
 
 func (s *Storage) DeleteEvent(ctx context.Context, id uuid.UUID) error {
-	result, err := s.db.ExecContext(ctx, "DELETE FROM event WHERE id=$1", id.String())
+	_, err := s.db.QueryxContext(ctx, "DELETE FROM event WHERE id=$1", id.String())
 	if err != nil {
 		return err
-	}
-
-	rows, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
-
-	if rows != 1 {
-		return fmt.Errorf("expected to affect 1 row, affected %d", rows)
 	}
 
 	return nil
 }
 
 func (s *Storage) GetEvents(ctx context.Context, date time.Time, offset int) ([]model.Event, error) {
-	startDate := date.Format(time.DateOnly)
-	endDate := date.AddDate(0, 0, offset).Format(time.DateOnly)
+	startDate := date.Format(time.DateOnly) + " 00:00:00"
+	endDate := date.AddDate(0, 0, offset).Format(time.DateOnly) + " 23:59:59"
 
-	result := s.db.QueryRowxContext(ctx, "SELECT id, title, start_time, description, duration, notify_before, user_id FROM event WHERE start_time BETWEEN $1 AND $2", startDate, endDate)
-	defer s.db.Close()
+	result, _ := s.db.QueryxContext(ctx, "SELECT id, title, start_time, description, duration, notify_before, user_id FROM event WHERE start_time BETWEEN $1 AND $2", startDate, endDate)
+	defer result.Close()
 
 	var events []model.Event
-	err := result.StructScan(&events)
-	if err != nil {
-		return nil, err
+	for result.Next() {
+		var e model.Event
+		var durationStr string
+		var notifyBeforeStr string
+
+		err := result.Scan(
+			&e.ID,
+			&e.Title,
+			&e.StartTime,
+			&e.Description,
+			&durationStr,
+			&notifyBeforeStr,
+			&e.UserID,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		duration, err := parseDuration(durationStr)
+		if err != nil {
+			return nil, err
+		}
+		e.Duration = duration
+
+		notifyBefore, err := parseDuration(notifyBeforeStr)
+		if err != nil {
+			return nil, err
+		}
+		e.NotifyBefore = notifyBefore
+
+		events = append(events, e)
 	}
 
 	return events, nil
@@ -191,4 +213,29 @@ func (s *Storage) DeleteOldEvents(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func parseDuration(durationStr string) (time.Duration, error) {
+	parts := strings.Split(durationStr, ":")
+	if len(parts) != 3 {
+		return 0, fmt.Errorf("invalid duration format: %s", durationStr)
+	}
+
+	hours, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return 0, err
+	}
+
+	minutes, err := strconv.Atoi(parts[1])
+	if err != nil {
+		return 0, err
+	}
+
+	seconds, err := strconv.Atoi(parts[2])
+	if err != nil {
+		return 0, err
+	}
+
+	duration := time.Duration(hours)*time.Hour + time.Duration(minutes)*time.Minute + time.Duration(seconds)*time.Second
+	return duration, nil
 }

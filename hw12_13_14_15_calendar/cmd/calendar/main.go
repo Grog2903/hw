@@ -31,11 +31,6 @@ func main() {
 	flag.StringVar(&configFile, "config", "configs/config.yaml", "Path to configuration file")
 	flag.Parse()
 
-	if flag.Arg(0) == "version" {
-		printVersion()
-		return
-	}
-
 	cfg, err := config.LoadConfig(configFile)
 	if err != nil {
 		panic(err)
@@ -48,7 +43,7 @@ func main() {
 	case "inMemory":
 		storage = memorystorage.New()
 	case "sql":
-		sqlStorage := sqlstorage.New()
+		sqlStorage := sqlstorage.New(nil)
 		ctx := context.Background()
 		if err := sqlStorage.Connect(ctx, *cfg); err != nil {
 			logg.Error("failed connect to database: " + err.Error())

@@ -12,14 +12,14 @@ var (
 )
 
 type Event struct {
-	ID           uuid.UUID
-	Title        string
-	StartTime    time.Time
-	Duration     time.Duration
-	Description  string
-	UserID       string
-	NotifyBefore time.Duration
-	Sent         bool
+	ID           uuid.UUID     `db:"id"`
+	Title        string        `db:"title"`
+	StartTime    time.Time     `db:"start_time"`
+	Duration     time.Duration `db:"duration"`
+	Description  string        `db:"description"`
+	UserID       string        `db:"user_id"`
+	NotifyBefore time.Duration `db:"notify_before"`
+	Sent         bool          `db:"sent"`
 }
 
 type Notification struct {
