@@ -14,15 +14,15 @@ rabbitmq:
 
 calendar:
   replicaCount: 1
-  image: "Grog2903/hw/calendar:latest"
+  image: "Grog2903/calendar:latest"
 
 sender:
   replicaCount: 1
-  image: "Grog2903/hw/calendar_sender:latest"
+  image: "Grog2903/calendar_sender:latest"
 
 scheduler:
   replicaCount: 1
-  image: "Grog2903/hw/calendar_scheduler:latest"
+  image: "Grog2903/calendar_scheduler:latest"
 
 ingress:
   enabled: true
