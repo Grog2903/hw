@@ -1,0 +1,31 @@
+postgresql:
+  replicaCount: 1
+  database: mydb
+  username: user
+  port: 5432
+  password: password
+
+rabbitmq:
+  replicaCount: 1
+  username: rabbitmq-user
+  password: rabbitmq-pass
+  port: 5672
+  webport: 15672
+
+calendar:
+  replicaCount: 1
+  image: "Grog2903/hw/calendar:latest"
+
+sender:
+  replicaCount: 1
+  image: "Grog2903/hw/calendar_sender:latest"
+
+scheduler:
+  replicaCount: 1
+  image: "Grog2903/hw/calendar_scheduler:latest"
+
+ingress:
+  enabled: true
+  hosts: "calendar.local"
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /

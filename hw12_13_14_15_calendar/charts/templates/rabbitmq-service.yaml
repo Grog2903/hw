@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-rabbitmq
+spec:
+  ports:
+    - port: {{ .Values.rabbitmq.port }}
+      targetPort: {{ .Values.rabbitmq.port }}
+      protocol: TCP
+      name: amqp
+    - port: {{ .Values.rabbitmq.webport }}
+      targetPort: {{ .Values.rabbitmq.webport }}
+      protocol: TCP
+      name: web
+  selector:
+    app: {{ .Release.Name }}-rabbitmq
